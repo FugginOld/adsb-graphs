@@ -447,112 +447,35 @@ def read_1090(data):
                    values = [stats['total']['cpu'][k]])
 
 
-    total = 0
-    with_pos = 0
+    ac_stats = compute_aircraft_stats(aircraft_data['aircraft'], rlat, rlon)
+
+    rq = ac_stats['range_quartiles']
     max_range = 0
-    mlat = 0
-    tisb = 0
-    gps = 0
+    if rq:
+        max_range = rq['max']
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='quart1',   time=aircraft_data['now'], values=[rq['q1']])
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='median',   time=aircraft_data['now'], values=[rq['median']])
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='quart3',   time=aircraft_data['now'], values=[rq['q3']])
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='minimum',  time=aircraft_data['now'], values=[rq['min']])
 
-    ranges = []
+    if has_key(stats['last1min'], 'max_distance'):
+        max_range = stats['last1min']['max_distance']
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+               type_instance='max_range', time=aircraft_data['now'], values=[max_range])
 
-    range_include_nonadsb = False
-
-    for a in aircraft_data['aircraft']:
-        if a['seen'] < 60: total += 1
-        if has_key(a,'seen_pos') and a['seen_pos'] < 60:
-            with_pos += 1
-            if rlat is not None:
-                distance = greatcircle(rlat, rlon, a['lat'], a['lon'])
-            else:
-                distance = 0
-
-            if 'lat' in a.get('mlat', ()):
-                mlat += 1
-            elif 'lat' in a.get('tisb', ()):
-                tisb += 1
-
-            if range_include_nonadsb or a.get('type') in [ 'adsb_icao', 'adsr_icao', None]:
-                # ADS-B or ADS-R (can be uat) position, include in range statistics
-                gps += 1
-                ranges.append(distance)
-
-    ranges.sort()
-
-    if len(ranges) > 0:
-        minimum = ranges[0]
-        quart1 = perc(0.25, ranges)
-        median = perc(0.50, ranges)
-        quart3 = perc(0.75, ranges)
-        max_range = ranges[-1]
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='quart1',
-                   time=aircraft_data['now'],
-                   values = [quart1])
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='median',
-                   time=aircraft_data['now'],
-                   values = [median])
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='quart3',
-                   time=aircraft_data['now'],
-                   values = [quart3])
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='minimum',
-                   time=aircraft_data['now'],
-                   values = [minimum])
-
-    if not range_include_nonadsb and has_key(stats['last1min'],'max_distance'):
-        max_range = stats['last1min']['max_distance'];
-    # max range is always dispatched, even if zero
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_range',
-               type_instance='max_range',
-               time=aircraft_data['now'],
-               values = [max_range])
-
-    # Aircraft numbers
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_aircraft',
-               type_instance='recent',
-               time=aircraft_data['now'],
-               values = [total, with_pos])
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_mlat',
-               type_instance='recent',
-               time=aircraft_data['now'],
-               values = [mlat])
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_tisb',
-               type_instance='recent',
-               time=aircraft_data['now'],
-               values = [tisb])
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_gps',
-               type_instance='recent',
-               time=aircraft_data['now'],
-               values = [gps])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_aircraft',
+               type_instance='recent', time=aircraft_data['now'],
+               values=[ac_stats['total'], ac_stats['with_pos']])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_mlat',
+               type_instance='recent', time=aircraft_data['now'], values=[ac_stats['mlat']])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_tisb',
+               type_instance='recent', time=aircraft_data['now'], values=[ac_stats['tisb']])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_gps',
+               type_instance='recent', time=aircraft_data['now'], values=[ac_stats['gps']])
 
 def read_978(data):
     instance_name,host,url = data
@@ -576,167 +499,115 @@ def read_978(data):
         collectd.warning(str(error))
         return
 
+    ac_stats = compute_aircraft_stats(aircraft_data['aircraft'], rlat, rlon, mode='978')
+
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_aircraft',
+               type_instance='recent_978', time=aircraft_data['now'],
+               values=[ac_stats['total'], ac_stats['with_pos']])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_tisb',
+               type_instance='recent_978', time=aircraft_data['now'], values=[ac_stats['tisb']])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_gps',
+               type_instance='recent_978', time=aircraft_data['now'], values=[ac_stats['gps']])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_messages',
+               type_instance='messages_978', time=aircraft_data['now'],
+               values=[aircraft_data['messages']])
+
+    rq = ac_stats['range_quartiles']
+    max_range = rq['max'] if rq else 0
+    if rq:
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='quart1_978',  time=aircraft_data['now'], values=[rq['q1']])
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='median_978',  time=aircraft_data['now'], values=[rq['median']])
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='quart3_978',  time=aircraft_data['now'], values=[rq['q3']])
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+                   type_instance='minimum_978', time=aircraft_data['now'], values=[rq['min']])
+    V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_range',
+               type_instance='max_range_978', time=aircraft_data['now'], values=[max_range])
+
+    sq = ac_stats['signal_quartiles']
+    if sq:
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_dbfs',
+                   type_instance='quart1_978',     time=aircraft_data['now'],
+                   values=[sq['q1']],    interval=60)
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_dbfs',
+                   type_instance='median_978',     time=aircraft_data['now'],
+                   values=[sq['median']], interval=60)
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_dbfs',
+                   type_instance='quart3_978',     time=aircraft_data['now'],
+                   values=[sq['q3']],    interval=60)
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_dbfs',
+                   type_instance='peak_signal_978', time=aircraft_data['now'],
+                   values=[sq['max']],   interval=60)
+        V.dispatch(plugin_instance=instance_name, host=host, type='dump1090_dbfs',
+                   type_instance='min_signal_978', time=aircraft_data['now'],
+                   values=[sq['min']],   interval=60)
+
+def compute_aircraft_stats(aircraft, rlat, rlon, mode='1090'):
     total = 0
     with_pos = 0
-    max_range = 0
+    mlat = 0
     tisb = 0
     gps = 0
-
     ranges = []
+    signals = []
 
-    for a in aircraft_data['aircraft']:
-        if a['seen'] < 60: total += 1
-        if has_key(a,'seen_pos') and a['seen_pos'] < 60:
+    for a in aircraft:
+        if a['seen'] < 60:
+            total += 1
+        if has_key(a, 'seen_pos') and a['seen_pos'] < 60:
             with_pos += 1
             if rlat is not None:
                 distance = greatcircle(rlat, rlon, a['lat'], a['lon'])
             else:
                 distance = 0
 
-            if 'lat' in a.get('tisb', ()):
+            if 'lat' in a.get('mlat', ()):
+                mlat += 1
+            elif 'lat' in a.get('tisb', ()):
                 tisb += 1
-            # GPS position, include in range statistics
             else:
                 gps += 1
-                # limit 978 data collection to 350 nmi (1 nmi = 1852 m)
-                if distance < 350 * 1852:
-                    ranges.append(distance)
+                if mode == '978':
+                    if distance < 350 * 1852:
+                        ranges.append(distance)
+                else:
+                    if a.get('type') in ('adsb_icao', 'adsr_icao', None):
+                        ranges.append(distance)
 
-    # Aircraft numbers
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_aircraft',
-               type_instance='recent_978',
-               time=aircraft_data['now'],
-               values = [total, with_pos])
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_tisb',
-               type_instance='recent_978',
-               time=aircraft_data['now'],
-               values = [tisb])
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_gps',
-               type_instance='recent_978',
-               time=aircraft_data['now'],
-               values = [gps])
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_messages',
-               type_instance='messages_978',
-               time=aircraft_data['now'],
-               values = [aircraft_data['messages']])
-
-    # Range statistics
-    ranges.sort()
-
-    if len(ranges) > 0:
-        minimum = ranges[0]
-        quart1 = perc(0.25, ranges)
-        median = perc(0.50, ranges)
-        quart3 = perc(0.75, ranges)
-        max_range = ranges[-1]
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='quart1_978',
-                   time=aircraft_data['now'],
-                   values = [quart1])
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='median_978',
-                   time=aircraft_data['now'],
-                   values = [median])
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='quart3_978',
-                   time=aircraft_data['now'],
-                   values = [quart3])
-
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_range',
-                   type_instance='minimum_978',
-                   time=aircraft_data['now'],
-                   values = [minimum])
-
-    V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_range',
-               type_instance='max_range_978',
-               time=aircraft_data['now'],
-               values = [max_range])
-
-    # Signal Statistics
-
-    signals = []
-
-    for a in aircraft_data['aircraft']:
-        if has_key(a,'rssi') and a['messages'] > 2 and a['seen'] < 60 :
+        if (has_key(a, 'rssi') and a['messages'] > (2 if mode == '978' else 4)
+                and a['seen'] < 60
+                and a['rssi'] > -49.4
+                and not a.get('type', '').startswith('tisb')
+                and not a.get('type', '').startswith('adsr')):
             rssi = a['rssi']
-            if rssi > -49.4 and not 'lat' in a.get('tisb', ()):
-                # clamp rssi to 0
-                if rssi > 0:
-                    rssi = 0
-                signals.append(rssi)
+            if mode == '978' and rssi > 0:
+                rssi = 0
+            signals.append(rssi)
 
+    ranges.sort()
     signals.sort()
 
-    if len(signals) > 0 :
-        minimum = signals[0]
-        quart1 = perc(0.25, signals)
-        median = perc(0.50, signals)
-        quart3 = perc(0.75, signals)
-        maximum = signals[-1]
+    return {
+        'total': total,
+        'with_pos': with_pos,
+        'mlat': mlat,
+        'tisb': tisb,
+        'gps': gps,
+        'range_quartiles': _quartile_dict(ranges) if ranges else None,
+        'signal_quartiles': _quartile_dict(signals) if signals else None,
+    }
 
-        V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_dbfs',
-               type_instance='quart1_978',
-               time=aircraft_data['now'],
-               values = [quart1],
-               interval = 60)
 
-        V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_dbfs',
-               type_instance='median_978',
-               time=aircraft_data['now'],
-               values = [median],
-               interval = 60)
-
-        V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_dbfs',
-               type_instance='quart3_978',
-               time=aircraft_data['now'],
-               values = [quart3],
-               interval = 60)
-
-        V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_dbfs',
-               type_instance='peak_signal_978',
-               time=aircraft_data['now'],
-               values = [maximum],
-               interval = 60)
-
-        V.dispatch(plugin_instance = instance_name,
-               host=host,
-               type='dump1090_dbfs',
-               type_instance='min_signal_978',
-               time=aircraft_data['now'],
-               values = [minimum],
-               interval = 60)
+def _quartile_dict(values):
+    return {
+        'min':    values[0],
+        'q1':     perc(0.25, values),
+        'median': perc(0.50, values),
+        'q3':     perc(0.75, values),
+        'max':    values[-1],
+    }
 
 def greatcircle(lat0, lon0, lat1, lon1):
     lat0 = lat0 * math.pi / 180.0;

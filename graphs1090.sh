@@ -61,17 +61,7 @@ AYELLOW=ffcc00
 AGRAY=dddddd
 
 
-DB=/var/lib/collectd/rrd
-
-source /etc/default/graphs1090
-
-# autodetect and use /run/collectd as DB folder if it exists and has localhost
-# folder having it automatically changed in /etc/default/graphs1090 causes
-# issues for example when the user replaces his configuration with the default
-# which is a valid approach
-if [[ -d /run/collectd/localhost ]]; then
-    DB=/run/collectd
-fi
+source /usr/share/graphs1090/resolve-config.sh
 
 if [[ "$colorscheme" == "dark" ]]; then
     CANVAS=161618
@@ -1282,11 +1272,20 @@ misc_airspy() {
 	mv "$1.tmp" "$1"
 	}
 
-IHTML=/usr/share/graphs1090/html/index.html
-function show_graph() {
-    if grep -qs -e 'style="display:none"> <!-- '$1' -->' "$IHTML"; then
-        sed -i -e 's/ style="display:none"> <!-- '$1' -->/> <!-- '$1' -->/' "$IHTML"
-    fi
+_active_graphs=()
+
+function register_active_graph() {
+    _active_graphs+=("$1")
+}
+
+function write_manifest() {
+    local json='['
+    local first=true
+    for key in "${_active_graphs[@]}"; do
+        if $first; then json+="\"$key\""; first=false; else json+=",\"$key\""; fi
+    done
+    json+=']'
+    echo "$json" > "${DOCUMENTROOT}/manifest.json"
 }
 
 dump1090_graphs() {
@@ -1302,7 +1301,7 @@ dump1090_graphs() {
 	signal_graph ${DOCUMENTROOT}/dump1090-$2-signal-$4.png ${DB}/$1/dump1090-$2 "$3" "$4" "$5"
 	if [[ -f ${DB}/$1/dump1090-$2/dump1090_messages-messages_978.rrd ]]
 	then
-        show_graph dump978
+        register_active_graph dump978
 		range_graph ${DOCUMENTROOT}/dump1090-$2-range_978-$4.png ${DB}/$1/dump1090-$2 "UAT" "$4" "$5"
 		978_aircraft ${DOCUMENTROOT}/dump1090-$2-aircraft_978-$4.png ${DB}/$1/dump1090-$2 "UAT" "$4" "$5"
 		978_messages ${DOCUMENTROOT}/dump1090-$2-messages_978-$4.png ${DB}/$1/dump1090-$2 "UAT" "$4" "$5"
@@ -1312,14 +1311,14 @@ dump1090_graphs() {
 		df_counts ${DOCUMENTROOT}/df_counts-$2-$4.png ${DB}/$1/dump1090-$2 "df_counts" "$4" "$5"
 	fi
 	if [[ -f ${DB}/$1/dump1090-$2/airspy_misc-samplerate.rrd ]]; then
-        show_graph airspy
+        register_active_graph airspy
         signal_airspy ${DOCUMENTROOT}/airspy-$2-rssi-$4.png ${DB}/$1/dump1090-$2 "rssi" "$4" "$5"
         signal_airspy ${DOCUMENTROOT}/airspy-$2-snr-$4.png ${DB}/$1/dump1090-$2 "snr" "$4" "$5"
         signal_airspy ${DOCUMENTROOT}/airspy-$2-noise-$4.png ${DB}/$1/dump1090-$2 "noise" "$4" "$5"
         misc_airspy ${DOCUMENTROOT}/airspy-$2-misc-$4.png ${DB}/$1/dump1090-$2 "misc" "$4" "$5"
     fi
     if [[ -f ${DB}/$1/dump1090-$2/dump1090_misc-gain_db.rrd ]]; then
-        show_graph dump1090-misc
+        register_active_graph dump1090-misc
         dump1090_misc ${DOCUMENTROOT}/dump1090-$2-misc-$4.png ${DB}/$1/dump1090-$2 "misc" "$4" "$5"
     fi
 }
@@ -1341,6 +1340,7 @@ dump1090_receiver_graphs() {
     if ! chk_enabled "$HIDE_SYSTEM"; then
         system_graphs "$1" "$2" "$3" "$4" "$5"
     fi
+    write_manifest
 }
 
 

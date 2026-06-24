@@ -66,6 +66,25 @@ if (usp.get('timeframe')) {
 
 //*** DO NOT EDIT BELOW THIS LINE UNLESS YOU KNOW WHAT YOU ARE DOING ***//
 
+const MANIFEST_PANELS = {
+    'dump978':       'panel_978',
+    'airspy':        'panel_airspy',
+    'dump1090-misc': 'dump1090-misc-link',
+};
+
+fetch('graphs/manifest.json')
+    .then(r => r.json())
+    .then(active => {
+        active.forEach(key => {
+            const id = MANIFEST_PANELS[key];
+            if (id) {
+                const el = document.getElementById(id);
+                if (el) el.style.display = '';
+            }
+        });
+    })
+    .catch(() => {});
+
 
 function switchView(newTimeFrame) {
     clearTimeout(refreshTimer);
