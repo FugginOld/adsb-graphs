@@ -1,15 +1,15 @@
-![Screenshot](https://raw.githubusercontent.com/wiedehopf/graphs1090/screenshots/screenshot1.png)
-![Screenshot](https://raw.githubusercontent.com/wiedehopf/graphs1090/screenshots/screenshot2.png)
+![Screenshot](https://raw.githubusercontent.com/FugginOld/graphs1090/screenshots/screenshot1.png)
+![Screenshot](https://raw.githubusercontent.com/FugginOld/graphs1090/screenshots/screenshot2.png)
 
 # graphs1090
-![Screenshot](https://raw.githubusercontent.com/wiedehopf/graphs1090/screenshots/messages_24h.png)
+![Screenshot](https://raw.githubusercontent.com/FugginOld/graphs1090/screenshots/messages_24h.png)
 Graphs for readsb (wiedehopf fork) and dump1090-fa (based on dump1090-tools by mutability)
 
 Also works for other dump1090 variants supplying stats.json
 
 ## Installation / Update to current version:
 ```
-sudo bash -c "$(curl -L -o - https://github.com/wiedehopf/graphs1090/raw/master/install.sh)"
+sudo bash -c "$(curl -L -o - https://github.com/FugginOld/graphs1090/raw/master/install.sh)"
 ```
 
 Note on data loss: When removing or losing power you will lose graph data generated after 23:42 of the previous day.
@@ -27,7 +27,7 @@ sudo nano /etc/default/graphs1090
 ```
 Ctrl-x to exit, y (yes) and enter to save.
 
-Checkout available options: <https://raw.githubusercontent.com/wiedehopf/graphs1090/master/default>
+Checkout available options: <https://raw.githubusercontent.com/FugginOld/graphs1090/master/default>
 Recently added: colorscheme=dark
 
 Reset configuration to defaults:
@@ -181,7 +181,7 @@ Also if you upgraded at a somewhen July 15th to July 16th 2019. Had a bad settin
 This can be necessary to change the database to save more than 3 years of data. (if the database was created before 2022-03-20)
 
 ```
-sudo bash -c "$(curl -L -o - https://github.com/wiedehopf/graphs1090/raw/master/install.sh)"
+sudo bash -c "$(curl -L -o - https://github.com/FugginOld/graphs1090/raw/master/install.sh)"
 sudo apt update
 sudo apt install -y screen
 sudo screen /usr/share/graphs1090/new-format.sh
