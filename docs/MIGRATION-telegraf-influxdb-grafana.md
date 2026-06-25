@@ -281,4 +281,39 @@ All 1090 measurements from `dump1090.py` are now ported. 37/37 tests pass.
 
 **Grafana `adsb.json`** v3: adds a "978 MHz (UAT)" row with Aircraft Seen and Range panels.
 
+---
+
+### Slice 4 — Phase B: airspy measurements — BUILT ✅
+
+38/38 tests pass.
+
+Single `airspy` measurement with all fields prefixed by metric name:
+
+| Field group | Fields |
+|---|---|
+| RSSI quartiles | rssi_min, rssi_p5, rssi_q1, rssi_median, rssi_q3, rssi_p95, rssi_max |
+| SNR quartiles | snr_min, snr_p5, snr_q1, snr_median, snr_q3, snr_p95, snr_max |
+| Noise quartiles | noise_min, noise_p5, noise_q1, noise_median, noise_q3, noise_p95, noise_max |
+| Misc scalars | preamble_filter, samplerate, gain (float); lost_buffers, max_aircraft_count (int) |
+| DF counts | df0, df4, df5, df11, df16, df17, df18, df19, df20, df21 (sparse; zero entries omitted) |
+
+**`build_lines_airspy(airspy_stats, instance)`** — pure, reads `<url_airspy>/stats.json`. Wired into `collect()` when `url_airspy` is configured.
+
+---
+
+### Slice 5 — System dashboard — BUILT ✅
+
+**`telegraf/telegraf.d/20-system.conf`** — native Telegraf inputs: cpu, mem, disk, diskio, net, temp. No custom code.
+
+**`grafana/provisioning/dashboards/system.json`** — 6-panel dashboard:
+
+| Panel | Measurement | Key fields | Unit |
+|---|---|---|---|
+| CPU Usage | cpu | usage_user, usage_system, usage_iowait (cpu-total) | percent |
+| Memory | mem | used, cached, buffered, available | bytes |
+| Disk Space | disk | used_percent (grouped by path) | percent |
+| Disk I/O | diskio | read_bytes/s, write_bytes/s (per device) | Bps |
+| Network I/O | net | bytes_recv/s, bytes_sent/s (per interface) | Bps |
+| Temperature | temp | temp (per sensor) | celsius |
+
 **Next:** airspy measurements, then `system.json` Grafana dashboard (native Telegraf inputs — no custom code). On real hardware: run `sudo bash collector/bringup-slice.sh`, confirm all panels populate, then start Phase C cutover prep.

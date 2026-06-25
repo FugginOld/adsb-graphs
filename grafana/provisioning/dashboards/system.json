@@ -1,0 +1,281 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "user",
+          "measurement": "cpu",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["usage_user"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "cpu", "operator": "=", "value": "cpu-total" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "system",
+          "measurement": "cpu",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["usage_system"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "cpu", "operator": "=", "value": "cpu-total" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "iowait",
+          "measurement": "cpu",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["usage_iowait"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "cpu", "operator": "=", "value": "cpu-total" } ]
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Memory",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "used",
+          "measurement": "mem",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["used"] }, { "type": "mean" } ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "cached",
+          "measurement": "mem",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["cached"] }, { "type": "mean" } ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "buffered",
+          "measurement": "mem",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["buffered"] }, { "type": "mean" } ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "available",
+          "measurement": "mem",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["available"] }, { "type": "mean" } ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Disk Space",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "$tag_path",
+          "measurement": "disk",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "tag", "params": ["path"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["used_percent"] }, { "type": "mean" } ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Disk I/O",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "read $tag_name",
+          "measurement": "diskio",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "tag", "params": ["name"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["read_bytes"] }, { "type": "non_negative_derivative", "params": ["1s"] } ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "write $tag_name",
+          "measurement": "diskio",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "tag", "params": ["name"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["write_bytes"] }, { "type": "non_negative_derivative", "params": ["1s"] } ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Network I/O",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "recv $tag_interface",
+          "measurement": "net",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "tag", "params": ["interface"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["bytes_recv"] }, { "type": "non_negative_derivative", "params": ["1s"] } ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "sent $tag_interface",
+          "measurement": "net",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "tag", "params": ["interface"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["bytes_sent"] }, { "type": "non_negative_derivative", "params": ["1s"] } ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Temperature",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "$tag_sensor",
+          "measurement": "temp",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "tag", "params": ["sensor"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["temp"] }, { "type": "mean" } ]],
+          "tags": []
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["graphs1090", "system"],
+  "templating": { "list": [] },
+  "time": { "from": "now-3h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "System",
+  "uid": "graphs1090-system",
+  "version": 1
+}

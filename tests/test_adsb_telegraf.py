@@ -290,6 +290,95 @@ def test_build_lines_978_tolerates_missing():
     assert t.build_lines_978(None, {'now': 1.0}, 'localhost') == []  # no 'aircraft' key
 
 
+# ── build_lines_airspy ────────────────────────────────────────────────────────
+
+def sample_airspy_stats():
+    return {
+        'now': 1719240000.0,
+        'rssi': {'min': -30.0, 'p5': -28.0, 'q1': -25.0, 'median': -22.0,
+                 'q3': -18.0, 'p95': -12.0, 'max': -3.0},
+        'snr':  {'min': 5.0,   'p5': 6.0,   'q1': 8.0,   'median': 12.0,
+                 'q3': 16.0,   'p95': 22.0,  'max': 25.0},
+        'noise':{'min': -35.0, 'p5': -34.0, 'q1': -32.0, 'median': -30.0,
+                 'q3': -28.0,  'p95': -25.0, 'max': -20.0},
+        'preamble_filter': 0.001,
+        'samplerate': 20000000,
+        'gain': 21,
+        'lost_buffers': 0,
+        'max_aircraft_count': 45,
+        'df_counts': [100, 0, 0, 0, 50, 200, 0, 0, 0, 0, 0, 30,
+                      0, 0, 0, 0, 5, 8000, 0, 0, 10, 2],
+    }
+
+
+def test_build_lines_airspy_emits_single_line():
+    lines = t.build_lines_airspy(sample_airspy_stats(), 'localhost')
+    assert len(lines) == 1
+    assert lines[0].startswith('airspy,instance=localhost ')
+
+
+def test_build_lines_airspy_rssi_quartiles():
+    line = t.build_lines_airspy(sample_airspy_stats(), 'localhost')[0]
+    assert 'rssi_min=-30' in line
+    assert 'rssi_p5=-28' in line
+    assert 'rssi_q1=-25' in line
+    assert 'rssi_median=-22' in line
+    assert 'rssi_q3=-18' in line
+    assert 'rssi_p95=-12' in line
+    assert 'rssi_max=-3' in line
+
+
+def test_build_lines_airspy_snr_and_noise_quartiles():
+    line = t.build_lines_airspy(sample_airspy_stats(), 'localhost')[0]
+    assert 'snr_median=12' in line
+    assert 'noise_median=-30' in line
+
+
+def test_build_lines_airspy_misc_fields():
+    line = t.build_lines_airspy(sample_airspy_stats(), 'localhost')[0]
+    assert 'preamble_filter=' in line
+    assert 'samplerate=' in line
+    assert 'gain=21' in line
+    assert 'lost_buffers=0i' in line
+    assert 'max_aircraft_count=45i' in line
+
+
+def test_build_lines_airspy_df_counts():
+    line = t.build_lines_airspy(sample_airspy_stats(), 'localhost')[0]
+    assert 'df0=100i' in line
+    assert 'df4=50i' in line
+    assert 'df17=8000i' in line
+    assert 'df21=2i' in line
+    # sparse: df1 is zero and should not appear
+    assert 'df1=' not in line
+
+
+def test_build_lines_airspy_timestamp():
+    line = t.build_lines_airspy(sample_airspy_stats(), 'localhost')[0]
+    assert line.endswith(' 1719240000000000000')
+
+
+def test_build_lines_airspy_tolerates_missing_sections():
+    # partial stats — only rssi, no snr/noise/df
+    stats = {'now': 1719240000.0, 'rssi': {'min': -30.0, 'median': -22.0, 'max': -3.0}}
+    line = t.build_lines_airspy(stats, 'localhost')[0]
+    assert 'rssi_min=-30' in line
+    assert 'snr_' not in line
+    assert 'noise_' not in line
+
+
+def test_build_lines_airspy_tolerates_none():
+    assert t.build_lines_airspy(None, 'localhost') == []
+
+
+def test_build_lines_airspy_tolerates_missing_now():
+    assert t.build_lines_airspy({'rssi': {'min': -30.0}}, 'localhost') == []
+
+
+def test_build_lines_airspy_tolerates_empty_fields():
+    assert t.build_lines_airspy({'now': 1.0}, 'localhost') == []
+
+
 # ── tag escaping ──────────────────────────────────────────────────────────────
 
 def test_esc_tag_escapes_specials():

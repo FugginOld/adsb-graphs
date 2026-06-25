@@ -222,6 +222,45 @@ def gain_line(stats, instance):
         esc_tag(instance), _ff(gain_db), int(float(ts) * 1e9))
 
 
+_AIRSPY_DF_INDEXES = (0, 4, 5, 11, 16, 17, 18, 19, 20, 21)
+
+
+def build_lines_airspy(airspy_stats, instance):
+    """Pure: build line-protocol string from airspy_adsb stats.json; [] if unusable."""
+    if not airspy_stats or 'now' not in airspy_stats:
+        return []
+
+    ts = int(float(airspy_stats['now']) * 1e9)
+    fields = []
+
+    for key in ('rssi', 'snr', 'noise'):
+        q = airspy_stats.get(key)
+        if not q:
+            continue
+        for idx in ('min', 'p5', 'q1', 'median', 'q3', 'p95', 'max'):
+            if idx in q:
+                fields.append('%s_%s=%s' % (key, idx, _ff(q[idx])))
+
+    for key in ('preamble_filter', 'samplerate', 'gain'):
+        if key in airspy_stats:
+            fields.append('%s=%s' % (key, _ff(airspy_stats[key])))
+
+    for key in ('lost_buffers', 'max_aircraft_count'):
+        if key in airspy_stats:
+            fields.append('%s=%di' % (key, int(airspy_stats[key])))
+
+    df = airspy_stats.get('df_counts')
+    if df:
+        for i in _AIRSPY_DF_INDEXES:
+            if i < len(df) and df[i]:
+                fields.append('df%d=%di' % (i, int(df[i])))
+
+    if not fields:
+        return []
+
+    return ['airspy,instance=%s %s %d' % (esc_tag(instance), ','.join(fields), ts)]
+
+
 def build_lines_978(receiver_978, aircraft_978, instance):
     """Pure: assemble all 978-band line-protocol strings for one poll. Testable."""
     if not aircraft_978 or 'aircraft' not in aircraft_978 or 'now' not in aircraft_978:
@@ -333,6 +372,14 @@ def collect(conf):
             receiver_978 = fetch_json(url_978 + '/data/receiver.json')
             aircraft_978 = fetch_json(url_978 + '/data/aircraft.json')
             lines.extend(build_lines_978(receiver_978, aircraft_978, conf['instance']))
+        except Exception:
+            pass
+
+    url_airspy = conf.get('url_airspy', '')
+    if url_airspy:
+        try:
+            airspy_stats = fetch_json(url_airspy + '/stats.json')
+            lines.extend(build_lines_airspy(airspy_stats, conf['instance']))
         except Exception:
             pass
 
