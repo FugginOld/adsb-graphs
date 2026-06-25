@@ -229,21 +229,39 @@ Recommend offering import as a clearly-labeled optional step, not part of the de
 
 ---
 
-## 13. First implementable slice — BUILT ✅
+## 13. Slice history
 
-Smallest end-to-end vertical proving the architecture. All files committed and tested:
+### Slice 1 — Phase A vertical (adsb_aircraft + adsb_messages) — BUILT ✅
 
 | File | Role |
 |---|---|
 | `collector/adsb_stats.py` | Pure math (verbatim from `dump1090.py`), collectd-free. |
-| `collector/adsb_telegraf.py` | Collector → line protocol; `execd` + `--once` modes; pure, tested line builders. |
+| `collector/adsb_telegraf.py` | Collector → line protocol; `execd` + `--once` modes. |
 | `collector/adsb_collector.conf.example` | Receiver URL / instance config. |
 | `telegraf/telegraf.conf` + `telegraf.d/10-adsb.conf` | Agent + `inputs.execd` + `outputs.influxdb`. |
 | `influxdb/retention.iql` | Creates `graphs1090` DB + `forever` RP. |
 | `grafana/provisioning/**` | Datasource + provider + `adsb.json` (Aircraft Seen, Message Rate). |
 | `collector/bringup-slice.sh` | Non-destructive Phase-A install on Debian/Ubuntu/Raspbian. |
-| `tests/test_adsb_telegraf.py` | 8 unit tests over the line builders. |
+| `tests/test_adsb_telegraf.py` | Unit tests over the line builders. |
 
-**Validated locally:** 22/22 tests pass; collector smoke-tested against a `file://` decoder fixture in both `--once` and `execd` modes producing correct line protocol; dashboard JSON + provisioning YAML parse clean; all shell/python syntax-checked.
+---
 
-**Next (on real hardware):** run `sudo bash collector/bringup-slice.sh` on a Pi, confirm `SELECT count("total") FROM adsb_aircraft` rises and the Grafana panels track the legacy PNGs. Once green, fan out the remaining measurements (range, signal, cpu, tracks, gain, 978, airspy) and the full system dashboard.
+### Slice 2 — Phase B: remaining 1090 measurements — BUILT ✅
+
+All 1090 measurements from `dump1090.py` are now ported. 37/37 tests pass.
+
+| Measurement | Fields | Notes |
+|---|---|---|
+| `adsb_aircraft` | total, with_pos, mlat, tisb, gps | `band=1090` tag; 978 variant pending |
+| `adsb_messages` | local_accepted, remote_accepted, positions, strong_signals | counter → `non_negative_derivative` at query |
+| `adsb_range` | max_range, median, q1, q3, min | `band=1090`; max_range prefers `last1min.max_distance` |
+| `adsb_signal` | signal, noise (from last1min.local) + median, q1, q3, peak_signal, min_signal (from aircraft quartiles) | `band=1090` |
+| `adsb_cpu` | demod, reader, background (+ any extras) | counter (ms); `non_negative_derivative` at query |
+| `adsb_tracks` | all, single_message | counter |
+| `adsb_gain` | gain_db | multi-fallback: adaptive → last1min direct → top-level → last1min.local |
+
+**Grafana `adsb.json`** updated to 7 panels: Aircraft Seen, Message Rate, Range, Signal, Tracks, CPU, Gain.
+
+**`band` tag design note:** `adsb_aircraft`, `adsb_range`, `adsb_signal` carry a `band` tag (`1090` or `978`) so 978 data lands in the same measurement without `_978`-suffixed fields. Filter with `WHERE band = '1090'` in panels.
+
+**Next:** 978 measurements (url_978 → aircraft/range/signal with `band=978`), then airspy, then `system.json` Grafana dashboard (native Telegraf inputs — no custom code). On real hardware: run `sudo bash collector/bringup-slice.sh`, confirm all 7 panels populate, then start Phase C cutover prep.

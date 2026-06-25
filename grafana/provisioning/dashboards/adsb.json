@@ -16,13 +16,13 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "id": 1,
       "options": {
         "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
-      "title": "Aircraft Seen (recent)",
+      "title": "Aircraft Seen",
       "type": "timeseries",
       "targets": [
         {
@@ -33,7 +33,7 @@
           "resultFormat": "time_series",
           "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
           "select": [[ { "type": "field", "params": ["total"] }, { "type": "mean" } ]],
-          "tags": []
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
         },
         {
           "datasource": { "type": "influxdb", "uid": "graphs1090" },
@@ -43,7 +43,17 @@
           "resultFormat": "time_series",
           "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
           "select": [[ { "type": "field", "params": ["with_pos"] }, { "type": "mean" } ]],
-          "tags": []
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "mlat",
+          "measurement": "adsb_aircraft",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["mlat"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
         }
       ]
     },
@@ -53,11 +63,11 @@
         "defaults": {
           "color": { "mode": "palette-classic" },
           "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
-          "unit": "mps"
+          "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "id": 2,
       "options": {
         "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
@@ -68,7 +78,7 @@
       "targets": [
         {
           "datasource": { "type": "influxdb", "uid": "graphs1090" },
-          "alias": "messages/s",
+          "alias": "local/s",
           "measurement": "adsb_messages",
           "policy": "default",
           "resultFormat": "time_series",
@@ -78,6 +88,287 @@
             { "type": "mean" },
             { "type": "non_negative_derivative", "params": ["1s"] }
           ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "positions/s",
+          "measurement": "adsb_messages",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[
+            { "type": "field", "params": ["positions"] },
+            { "type": "mean" },
+            { "type": "non_negative_derivative", "params": ["1s"] }
+          ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "lengthm"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "max range" }, "properties": [ { "id": "custom.lineWidth", "value": 2 } ] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": {
+        "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Range",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "max range",
+          "measurement": "adsb_range",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["max_range"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "median",
+          "measurement": "adsb_range",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["median"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "q1",
+          "measurement": "adsb_range",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["q1"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "q3",
+          "measurement": "adsb_range",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["q3"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": {
+        "legend": { "calcs": ["last", "mean"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Signal",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "peak",
+          "measurement": "adsb_signal",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["peak_signal"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "median",
+          "measurement": "adsb_signal",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["median"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "noise",
+          "measurement": "adsb_signal",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["noise"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "noise floor",
+          "measurement": "adsb_signal",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["min_signal"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "1090" } ]
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "options": {
+        "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Tracks",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "all/s",
+          "measurement": "adsb_tracks",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[
+            { "type": "field", "params": ["all"] },
+            { "type": "mean" },
+            { "type": "non_negative_derivative", "params": ["1s"] }
+          ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "single-msg/s",
+          "measurement": "adsb_tracks",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[
+            { "type": "field", "params": ["single_message"] },
+            { "type": "mean" },
+            { "type": "non_negative_derivative", "params": ["1s"] }
+          ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "options": {
+        "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "CPU (decoder threads)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "demod",
+          "measurement": "adsb_cpu",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[
+            { "type": "field", "params": ["demod"] },
+            { "type": "mean" },
+            { "type": "non_negative_derivative", "params": ["1s"] }
+          ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "reader",
+          "measurement": "adsb_cpu",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[
+            { "type": "field", "params": ["reader"] },
+            { "type": "mean" },
+            { "type": "non_negative_derivative", "params": ["1s"] }
+          ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "background",
+          "measurement": "adsb_cpu",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[
+            { "type": "field", "params": ["background"] },
+            { "type": "mean" },
+            { "type": "non_negative_derivative", "params": ["1s"] }
+          ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "id": 7,
+      "options": {
+        "legend": { "calcs": ["last", "mean"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Gain",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "gain dB",
+          "measurement": "adsb_gain",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["gain_db"] }, { "type": "mean" } ]],
           "tags": []
         }
       ]
@@ -90,8 +381,8 @@
   "time": { "from": "now-6h", "to": "now" },
   "timepicker": {},
   "timezone": "",
-  "title": "graphs1090 — ADS-B (slice)",
-  "uid": "graphs1090-adsb-slice",
-  "version": 1,
+  "title": "graphs1090 — ADS-B",
+  "uid": "graphs1090-adsb",
+  "version": 2,
   "weekStart": ""
 }
