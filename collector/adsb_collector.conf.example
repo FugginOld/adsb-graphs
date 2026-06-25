@@ -1,0 +1,22 @@
+# graphs1090 Telegraf collector config
+# Installed to /usr/share/graphs1090/adsb_collector.conf (autodetected by install.sh).
+# Override the path with the ADSB_COLLECTOR_CONF env var.
+
+# Logical name for this receiver (becomes the `instance` tag in InfluxDB).
+instance=localhost
+
+# Base URL of the decoder web data. Same value the legacy collectd config used.
+# The collector reads <url>/data/stats.json, /data/aircraft.json, /data/receiver.json
+#   readsb:        http://localhost/tar1090   (or file:///run/readsb)
+#   dump1090-fa:   http://localhost/dump1090-fa
+#   file source:   file:///usr/share/graphs1090/data-symlink
+url=file:///usr/share/graphs1090/data-symlink
+
+# Optional UAT 978 source (leave blank to disable).
+url_978=
+
+# Optional airspy_adsb stats source.
+url_airspy=file:///run/airspy_adsb
+
+# Optional separate 1090 signal source (tar1090 on another host).
+url_1090_signal=

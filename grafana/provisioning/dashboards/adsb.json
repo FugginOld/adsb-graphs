@@ -1,0 +1,97 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Aircraft Seen (recent)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "total",
+          "measurement": "adsb_aircraft",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["total"] }, { "type": "mean" } ]],
+          "tags": []
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "with positions",
+          "measurement": "adsb_aircraft",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["with_pos"] }, { "type": "mean" } ]],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "mps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": {
+        "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Message Rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "messages/s",
+          "measurement": "adsb_messages",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[
+            { "type": "field", "params": ["local_accepted"] },
+            { "type": "mean" },
+            { "type": "non_negative_derivative", "params": ["1s"] }
+          ]],
+          "tags": []
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": ["graphs1090", "adsb"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "graphs1090 — ADS-B (slice)",
+  "uid": "graphs1090-adsb-slice",
+  "version": 1,
+  "weekStart": ""
+}

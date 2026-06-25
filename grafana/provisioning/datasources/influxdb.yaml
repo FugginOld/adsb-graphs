@@ -1,0 +1,14 @@
+# Grafana datasource provisioning — InfluxDB v1.x (InfluxQL).
+# Install to /etc/grafana/provisioning/datasources/influxdb.yaml
+apiVersion: 1
+
+datasources:
+  - name: graphs1090
+    type: influxdb
+    access: proxy
+    url: http://127.0.0.1:8086
+    database: graphs1090
+    isDefault: true
+    jsonData:
+      dbName: graphs1090
+      httpMode: GET

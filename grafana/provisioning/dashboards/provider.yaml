@@ -1,0 +1,15 @@
+# Grafana dashboard provider — loads JSON dashboards from disk.
+# Install to /etc/grafana/provisioning/dashboards/provider.yaml
+apiVersion: 1
+
+providers:
+  - name: graphs1090
+    orgId: 1
+    folder: graphs1090
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/graphs1090
+      foldersFromFilesStructure: false
