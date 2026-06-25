@@ -374,6 +374,96 @@
       ]
     }
   ],
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "id": 20,
+      "title": "978 MHz (UAT)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 25, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+      "id": 21,
+      "options": {
+        "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "978 Aircraft Seen",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "total",
+          "measurement": "adsb_aircraft",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["total"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "978" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "with positions",
+          "measurement": "adsb_aircraft",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["with_pos"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "978" } ]
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "graphs1090" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never", "spanNulls": true },
+          "unit": "lengthm"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
+      "id": 22,
+      "options": {
+        "legend": { "calcs": ["last", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "978 Range",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "max range",
+          "measurement": "adsb_range",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["max_range"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "978" } ]
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "graphs1090" },
+          "alias": "median",
+          "measurement": "adsb_range",
+          "policy": "default",
+          "resultFormat": "time_series",
+          "groupBy": [ { "type": "time", "params": ["$__interval"] }, { "type": "fill", "params": ["null"] } ],
+          "select": [[ { "type": "field", "params": ["median"] }, { "type": "mean" } ]],
+          "tags": [ { "key": "band", "operator": "=", "value": "978" } ]
+        }
+      ]
+    }
+  ],
   "refresh": "1m",
   "schemaVersion": 39,
   "tags": ["graphs1090", "adsb"],
@@ -383,6 +473,6 @@
   "timezone": "",
   "title": "graphs1090 — ADS-B",
   "uid": "graphs1090-adsb",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

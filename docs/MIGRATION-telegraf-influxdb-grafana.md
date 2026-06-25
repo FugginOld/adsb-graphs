@@ -264,4 +264,21 @@ All 1090 measurements from `dump1090.py` are now ported. 37/37 tests pass.
 
 **`band` tag design note:** `adsb_aircraft`, `adsb_range`, `adsb_signal` carry a `band` tag (`1090` or `978`) so 978 data lands in the same measurement without `_978`-suffixed fields. Filter with `WHERE band = '1090'` in panels.
 
-**Next:** 978 measurements (url_978 → aircraft/range/signal with `band=978`), then airspy, then `system.json` Grafana dashboard (native Telegraf inputs — no custom code). On real hardware: run `sudo bash collector/bringup-slice.sh`, confirm all 7 panels populate, then start Phase C cutover prep.
+---
+
+### Slice 3 — Phase B: 978 measurements — BUILT ✅
+
+42/42 tests pass.
+
+| Measurement | Fields | `band` tag |
+|---|---|---|
+| `adsb_messages` | messages | 978 |
+| `adsb_aircraft` | total, with_pos, mlat, tisb, gps | 978 |
+| `adsb_range` | max_range, median, q1, q3, min | 978 |
+| `adsb_signal` | median, q1, q3, peak_signal, min_signal | 978 (no last1min.local signal/noise) |
+
+**`build_lines_978(receiver_978, aircraft_978, instance)`** — pure, calls `compute_aircraft_stats(mode='978')`. Wired into `collect()` when `url_978` is configured.
+
+**Grafana `adsb.json`** v3: adds a "978 MHz (UAT)" row with Aircraft Seen and Range panels.
+
+**Next:** airspy measurements, then `system.json` Grafana dashboard (native Telegraf inputs — no custom code). On real hardware: run `sudo bash collector/bringup-slice.sh`, confirm all panels populate, then start Phase C cutover prep.

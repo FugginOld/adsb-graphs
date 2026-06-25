@@ -230,6 +230,66 @@ def test_build_lines_tolerates_missing_inputs():
     assert t.build_lines(None, None, None, 'localhost') == []
 
 
+# ── build_lines_978 ───────────────────────────────────────────────────────────
+
+def aircraft_978_json():
+    return {
+        'now': 1719240000.0,
+        'messages': 42000,
+        'aircraft': [
+            {'seen': 1, 'messages': 10, 'rssi': -18.0, 'seen_pos': 1, 'lat': 51.0, 'lon': 0.1},
+            {'seen': 3, 'messages': 10, 'rssi': -25.0, 'seen_pos': 3, 'lat': 52.0, 'lon': 0.2,
+             'tisb': ['lat', 'lon']},
+            {'seen': 90, 'messages': 10, 'rssi': -20.0},  # stale
+        ],
+    }
+
+
+def test_build_lines_978_emits_expected_measurements():
+    receiver = {'lat': 51.5, 'lon': 0.0}
+    lines = t.build_lines_978(receiver, aircraft_978_json(), 'localhost')
+    measurements = {l.split(',')[0] for l in lines}
+    assert 'adsb_messages' in measurements
+    assert 'adsb_aircraft' in measurements
+    assert 'adsb_range' in measurements
+    assert 'adsb_signal' in measurements
+
+
+def test_build_lines_978_uses_978_band_tag():
+    receiver = {'lat': 51.5, 'lon': 0.0}
+    lines = t.build_lines_978(receiver, aircraft_978_json(), 'localhost')
+    tagged = [l for l in lines if l.startswith('adsb_aircraft') or l.startswith('adsb_range') or l.startswith('adsb_signal')]
+    assert all('band=978' in l for l in tagged)
+
+
+def test_build_lines_978_messages_count():
+    aj = {'now': 1719240000.0, 'messages': 42000, 'aircraft': []}
+    lines = t.build_lines_978(None, aj, 'localhost')
+    msg = next((l for l in lines if l.startswith('adsb_messages')), None)
+    assert msg is not None
+    assert 'messages=42000i' in msg
+    assert 'band=978' in msg
+    assert msg.endswith(' 1719240000000000000')
+
+
+def test_build_lines_978_tisb_counted_separately():
+    # aircraft[0]: seen=1, seen_pos=1, no mlat/tisb key → gps=1
+    # aircraft[1]: seen=3, seen_pos=3, tisb=['lat','lon'] → tisb=1
+    # aircraft[2]: seen=90 → not counted
+    receiver = {'lat': 51.5, 'lon': 0.0}
+    lines = t.build_lines_978(receiver, aircraft_978_json(), 'localhost')
+    ac = next(l for l in lines if l.startswith('adsb_aircraft'))
+    assert 'tisb=1i' in ac
+    assert 'gps=1i' in ac
+    assert 'total=2i' in ac
+    assert 'with_pos=2i' in ac
+
+
+def test_build_lines_978_tolerates_missing():
+    assert t.build_lines_978(None, None, 'localhost') == []
+    assert t.build_lines_978(None, {'now': 1.0}, 'localhost') == []  # no 'aircraft' key
+
+
 # ── tag escaping ──────────────────────────────────────────────────────────────
 
 def test_esc_tag_escapes_specials():

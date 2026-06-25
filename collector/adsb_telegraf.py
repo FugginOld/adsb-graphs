@@ -222,6 +222,41 @@ def gain_line(stats, instance):
         esc_tag(instance), _ff(gain_db), int(float(ts) * 1e9))
 
 
+def build_lines_978(receiver_978, aircraft_978, instance):
+    """Pure: assemble all 978-band line-protocol strings for one poll. Testable."""
+    if not aircraft_978 or 'aircraft' not in aircraft_978 or 'now' not in aircraft_978:
+        return []
+
+    rlat = rlon = None
+    if receiver_978 and 'lat' in receiver_978:
+        rlat = float(receiver_978['lat'])
+        rlon = float(receiver_978['lon'])
+
+    ac_stats = compute_aircraft_stats(aircraft_978['aircraft'], rlat, rlon, mode='978')
+    aircraft_ts = aircraft_978['now']
+
+    out = []
+
+    if 'messages' in aircraft_978:
+        ts = int(float(aircraft_ts) * 1e9)
+        out.append('adsb_messages,instance=%s,band=978 messages=%di %d' % (
+            esc_tag(instance), int(aircraft_978['messages']), ts))
+
+    a = aircraft_line(ac_stats, aircraft_ts, instance, band='978')
+    if a:
+        out.append(a)
+
+    r = range_line(ac_stats, None, aircraft_ts, instance, band='978')
+    if r:
+        out.append(r)
+
+    s = signal_line(ac_stats, None, aircraft_ts, instance, band='978')
+    if s:
+        out.append(s)
+
+    return out
+
+
 def build_lines(stats, receiver, aircraft_json, instance):
     """Pure: assemble all 1090 line-protocol strings for one poll. Testable."""
     rlat = rlon = None
@@ -289,7 +324,19 @@ def collect(conf):
         aircraft_json = fetch_json(url + '/data/aircraft.json')
     except Exception:
         return []
-    return build_lines(stats, receiver, aircraft_json, conf['instance'])
+
+    lines = build_lines(stats, receiver, aircraft_json, conf['instance'])
+
+    url_978 = conf.get('url_978', '')
+    if url_978:
+        try:
+            receiver_978 = fetch_json(url_978 + '/data/receiver.json')
+            aircraft_978 = fetch_json(url_978 + '/data/aircraft.json')
+            lines.extend(build_lines_978(receiver_978, aircraft_978, conf['instance']))
+        except Exception:
+            pass
+
+    return lines
 
 
 def emit(lines):
