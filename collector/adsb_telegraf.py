@@ -15,7 +15,7 @@ import json
 from contextlib import closing
 from urllib.request import urlopen
 
-from line_protocol import build_lines, build_lines_978, build_lines_airspy
+from line_protocol import build_all_lines
 
 
 # ── config ────────────────────────────────────────────────────────────────────
@@ -72,26 +72,23 @@ def collect(conf):
     except Exception:
         return []
 
-    lines = build_lines(stats, receiver, aircraft_json, conf['instance'])
-
+    kwargs = {}
     url_978 = conf.get('url_978', '')
     if url_978:
         try:
-            receiver_978 = fetch_json(url_978 + '/data/receiver.json')
-            aircraft_978 = fetch_json(url_978 + '/data/aircraft.json')
-            lines.extend(build_lines_978(receiver_978, aircraft_978, conf['instance']))
+            kwargs['receiver_978'] = fetch_json(url_978 + '/data/receiver.json')
+            kwargs['aircraft_978'] = fetch_json(url_978 + '/data/aircraft.json')
         except Exception:
             pass
 
     url_airspy = conf.get('url_airspy', '')
     if url_airspy:
         try:
-            airspy_stats = fetch_json(url_airspy + '/stats.json')
-            lines.extend(build_lines_airspy(airspy_stats, conf['instance']))
+            kwargs['airspy_stats'] = fetch_json(url_airspy + '/stats.json')
         except Exception:
             pass
 
-    return lines
+    return build_all_lines(stats, receiver, aircraft_json, conf['instance'], **kwargs)
 
 
 def emit(lines):

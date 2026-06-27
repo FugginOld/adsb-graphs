@@ -243,6 +243,17 @@ def build_lines_978(receiver_978, aircraft_978, instance):
     return out
 
 
+def build_all_lines(stats, receiver, aircraft_json, instance,
+                    receiver_978=None, aircraft_978=None, airspy_stats=None):
+    """Pure: assemble all-band line-protocol strings for one poll. Testable."""
+    lines = build_lines(stats, receiver, aircraft_json, instance)
+    if receiver_978 is not None or aircraft_978 is not None:
+        lines.extend(build_lines_978(receiver_978, aircraft_978, instance))
+    if airspy_stats is not None:
+        lines.extend(build_lines_airspy(airspy_stats, instance))
+    return lines
+
+
 def build_lines(stats, receiver, aircraft_json, instance):
     """Pure: assemble all 1090 line-protocol strings for one poll. Testable."""
     rlat = rlon = None

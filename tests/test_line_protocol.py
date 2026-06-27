@@ -379,6 +379,32 @@ def test_build_lines_airspy_tolerates_empty_fields():
     assert t.build_lines_airspy({'now': 1.0}, 'localhost') == []
 
 
+# ── build_all_lines ───────────────────────────────────────────────────────────
+
+def test_build_all_lines_1090_only():
+    stats = {'total': sample_total()}
+    lines = t.build_all_lines(stats, None, aircraft_json(), 'localhost')
+    measurements = {l.split(',')[0] for l in lines}
+    assert 'adsb_messages' in measurements
+    assert 'adsb_aircraft' in measurements
+    assert 'airspy' not in measurements
+
+
+def test_build_all_lines_with_978():
+    stats = {'total': sample_total()}
+    lines = t.build_all_lines(stats, None, aircraft_json(), 'localhost',
+                              aircraft_978=aircraft_978_json())
+    measurements = {l.split(',')[0] for l in lines}
+    assert 'adsb_messages' in measurements
+    assert any('band=978' in l for l in lines)
+
+
+def test_build_all_lines_with_airspy():
+    lines = t.build_all_lines(None, None, None, 'localhost',
+                              airspy_stats=sample_airspy_stats())
+    assert any(l.startswith('airspy,') for l in lines)
+
+
 # ── tag escaping ──────────────────────────────────────────────────────────────
 
 def test_esc_tag_escapes_specials():
