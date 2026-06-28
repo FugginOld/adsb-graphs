@@ -1,0 +1,15 @@
+# Local-stack datasource — points Grafana at the compose InfluxDB container.
+# uid must match the datasource uid the dashboards reference ("adsb-graphs").
+apiVersion: 1
+
+datasources:
+  - name: adsb-graphs
+    uid: adsb-graphs
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: adsb-graphs
+    isDefault: true
+    jsonData:
+      dbName: adsb-graphs
+      httpMode: GET
