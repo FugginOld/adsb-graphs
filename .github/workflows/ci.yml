@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tools
+        run: pip install ruff pytest
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Shellcheck
+        run: shellcheck $(git ls-files '*.sh')
+
+      - name: Pytest
+        run: pytest
